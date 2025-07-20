@@ -4,21 +4,17 @@
     "name": "Google",
     "icon": "https://www.google.com/s2/favicons?sz=64&domain_url=https://google.com",
     "position": 0
-  }
-]
-[
+  },
   {
     "url": "https://www.fcbarca.com/",
     "name": "FCBarca",
-    "icon": "https://www.google.com/s2/favicons?sz=64&domain_url=https://google.com",
+    "icon": "https://www.google.com/s2/favicons?sz=64&domain_url=https://www.fcbarca.com/",
     "position": 1
-  }
-]
-[
+  },
   {
     "url": "fcbarca.com",
     "name": "FCBarca2",
-    "icon": "https://www.google.com/s2/favicons?sz=64&domain_url=https://google.com",
+    "icon": "https://www.google.com/s2/favicons?sz=64&domain_url=https://fcbarca.com",
     "position": 2
   }
 ]

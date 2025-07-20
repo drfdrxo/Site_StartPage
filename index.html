@@ -49,41 +49,167 @@
       font-size: 0.75rem;
       text-align: center;
     }
+    #modal {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      display: none;
+      z-index: 10;
+      width: 250px;
+    }
+    #modal input {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+    #modal button {
+      margin-top: 0.5rem;
+      margin-right: 0.5rem;
+    }
+    #backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.3);
+      display: none;
+      z-index: 5;
+    }
   </style>
 </head>
 <body>
   <h1>My Start Page</h1>
   <div id="links"></div>
 
+  <div id="backdrop" onclick="closeModal()"></div>
+  <div id="modal">
+    <input id="nameInput" placeholder="Name" />
+    <input id="urlInput" placeholder="URL" />
+    <input id="iconInput" placeholder="Icon URL" />
+    <button onclick="saveSite()">Save</button>
+    <button onclick="deleteSite()" style="background: var(--danger); color: white;">Delete</button>
+    <button onclick="closeModal()">Cancel</button>
+  </div>
+  <!-- Modal_E2 - Add New Site -->
+<div id="modalAdd" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:1rem; border:1px solid #ccc; border-radius:8px; width:250px; z-index:20;">
+  <input id="newUrlInput" placeholder="Enter domain e.g. yahoo.com" style="width:100%; margin-bottom:0.5rem;" />
+  <button onclick="addNewSite()">Add</button>
+  <button onclick="closeAddModal()">Cancel</button>
+</div>
+<button onclick="openAddModal()">＋ Add Site</button>
+
+
+
   <script>
     const linksContainer = document.getElementById("links");
-    const DATA_URL = "https://raw.githubusercontent.com/drfdrxo/Site_StartPage/main/data.json";
+    const modal = document.getElementById("modal");
+    const backdrop = document.getElementById("backdrop");
+    const nameInput = document.getElementById("nameInput");
+    const urlInput = document.getElementById("urlInput");
+    const iconInput = document.getElementById("iconInput");
+    let data = [];
+    let editIndex = null;
 
-    fetch(DATA_URL)
-      .then(res => res.json())
-      .then(data => {
-        data.sort((a, b) => a.position - b.position);
+    function openModal(index) {
+      editIndex = index;
+      const item = data[index];
+      nameInput.value = item.name;
+      urlInput.value = item.url;
+      iconInput.value = item.icon;
+      modal.style.display = backdrop.style.display = 'block';
+    }
 
-        data.forEach(entry => {
-          const div = document.createElement("div");
-          div.className = "link";
-          div.onclick = () => {
-            const target = entry.url.startsWith("http") ? entry.url : `https://${entry.url}`;
-            window.open(target, "_blank");
-          };
+    function openAddModal() {
+      editIndex = null;
+      nameInput.value = urlInput.value = iconInput.value = '';
+      modal.style.display = backdrop.style.display = 'block';
+    }
 
-          div.innerHTML = `
-            <img src="${entry.icon}" alt="icon">
-            <span>${entry.name}</span>
-          `;
+    function closeModal() {
+      modal.style.display = backdrop.style.display = 'none';
+    }
 
-          linksContainer.appendChild(div);
-        });
-      })
-      .catch(err => {
-        linksContainer.innerHTML = "<p style='color:red;'>Error loading data.json</p>";
-        console.error(err);
+    function saveSite() {
+      const newItem = {
+        name: nameInput.value,
+        url: urlInput.value,
+        icon: iconInput.value,
+        position: data.length
+      };
+      if (editIndex !== null) data[editIndex] = newItem;
+      else data.push(newItem);
+      localStorage.setItem("start_links", JSON.stringify(data));
+      renderLinks();
+      closeModal();
+    }
+
+    function deleteSite() {
+      if (editIndex !== null) {
+        data.splice(editIndex, 1);
+        localStorage.setItem("start_links", JSON.stringify(data));
+        renderLinks();
+      }
+      closeModal();
+    }
+
+    function renderLinks() {
+      linksContainer.innerHTML = "";
+      data.forEach((entry, index) => {
+        const div = document.createElement("div");
+        div.className = "link";
+        div.onclick = () => window.open(entry.url, "_blank");
+        div.oncontextmenu = (e) => {
+          e.preventDefault();
+          openModal(index);
+        };
+        div.innerHTML = `<img src="${entry.icon}"/><span>${entry.name}</span>`;
+        linksContainer.appendChild(div);
+      });
+    }
+
+    fetch("https://raw.githubusercontent.com/drfdrxo/Site_StartPage/main/data.json")
+      .then(r => r.json())
+      .then(json => {
+        const stored = localStorage.getItem("start_links");
+        data = stored ? JSON.parse(stored) : json;
+        renderLinks();
       });
   </script>
+  <script>
+  const modalAdd = document.getElementById("modalAdd");
+  const newUrlInput = document.getElementById("newUrlInput");
+
+  function openAddModal() {
+    newUrlInput.value = "";
+    modalAdd.style.display = backdrop.style.display = "block";
+  }
+
+  function closeAddModal() {
+    modalAdd.style.display = backdrop.style.display = "none";
+  }
+
+  function addNewSite() {
+    const input = newUrlInput.value.trim();
+    if (!input) return;
+
+    const domain = input.replace(/^https?:\/\//, '').replace(/\/.*/, '');
+    const url = input.startsWith("http") ? input : "https://" + domain;
+    const icon = "https://www.google.com/s2/favicons?sz=64&domain_url=https://" + domain;
+
+    const newItem = {
+      name: domain,
+      url: url,
+      icon: icon,
+      position: data.length
+    };
+
+    data.push(newItem);
+    localStorage.setItem("start_links", JSON.stringify(data));
+    renderLinks();
+    closeAddModal();
+  }
+</script>
+
 </body>
 </html>

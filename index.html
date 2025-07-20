@@ -1,1 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Start</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 2rem;
+      font-family: sans-serif;
+      background: #fff;
+      color: #000;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 64px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .item img {
+      width: 32px;
+      height: 32px;
+      margin-bottom: 4px;
+    }
+    .item span {
+      font-size: 0.75rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    const url = "https://twojadomena.github.io/data.json"; // zmień na swój link
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        // sortujemy po pozycji
+        data.sort((a, b) => a.position - b.position);
+
+        data.forEach(entry => {
+          const a = document.createElement("a");
+          a.className = "item";
+          a.href = entry.url.startsWith("http") ? entry.url : "https://" + entry.url;
+          a.target = "_blank";
+          a.innerHTML = `
+            <img src="${entry.icon}" alt="${entry.name}">
+            <span>${entry.name}</span>
+          `;
+          document.body.appendChild(a);
+        });
+      })
+      .catch(err => {
+        document.body.innerHTML = "<p style='color:red;'>Błąd ładowania data.json</p>";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
 
